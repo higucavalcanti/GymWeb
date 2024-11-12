@@ -1,9 +1,7 @@
 package com.project.gymweb.services;
 
 import com.project.gymweb.entities.Supplement;
-import com.project.gymweb.exceptions.SupplementNotFoundException;
 import com.project.gymweb.repositories.SupplementRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +26,6 @@ public class SupplementService {
     }
 
     public Supplement findById(UUID id) {
-        return supplementRepository.findById(id).orElseThrow(() -> new SupplementNotFoundException("Supplement with id " + id + " was not found"));
+        return supplementRepository.findById(id).orElseThrow();
     }
 }

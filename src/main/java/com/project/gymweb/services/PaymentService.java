@@ -4,8 +4,6 @@ import com.project.gymweb.dto.create.PaymentDTO;
 import com.project.gymweb.dto.view.PaymentRO;
 import com.project.gymweb.entities.Payment;
 import com.project.gymweb.enums.PaymentType;
-import com.project.gymweb.exceptions.PaymentNotFoundException;
-import com.project.gymweb.exceptions.UserNotFoundException;
 import com.project.gymweb.repositories.PaymentRepository;
 import com.project.gymweb.repositories.UserRepository;
 import com.project.gymweb.services.discount.AnnualDiscountStrategy;
@@ -45,22 +43,22 @@ public class PaymentService {
     }
 
     public List<PaymentRO> findByUserId(UUID userId) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User with id " + userId + " was not found"));
+        var user = userRepository.findById(userId).orElseThrow();
         return repository.findAllByUserId(user.getId()).stream().map(this::entityToRO).toList();
     }
 
     public List<PaymentRO> findAllByUserUsername(String username) {
-        var user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with name " + username + " was not found"));
+        var user = userRepository.findByUsername(username).orElseThrow();
         return repository.findAllByUserId(user.getId()).stream().map(this::entityToRO).toList();
     }
 
     public List<PaymentRO> findAllByUserEmail(String email) {
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email " + email + " was not found"));
+        var user = userRepository.findByEmail(email).orElseThrow();
         return repository.findAllByUserId(user.getId()).stream().map(this::entityToRO).toList();
     }
 
     public PaymentRO getPayment(UUID paymentId) {
-        var payment = repository.findById(paymentId).orElseThrow(() -> new PaymentNotFoundException("Payment with id " + paymentId + " was not found"));
+        var payment = repository.findById(paymentId).orElseThrow();
         return entityToRO(payment);
     }
 
@@ -77,8 +75,8 @@ public class PaymentService {
     }
 
     public PaymentRO updatePayment(UUID id, PaymentDTO paymentDTO) {
-        var payment = repository.findById(id).orElseThrow(() -> new PaymentNotFoundException("Payment with id " + id + " was not found"));
-        var user = userRepository.findById(paymentDTO.userId()).orElseThrow(() -> new UserNotFoundException("User with id " + id + " was not found"));
+        var payment = repository.findById(id).orElseThrow();
+        var user = userRepository.findById(paymentDTO.userId()).orElseThrow();
 
         payment.setValue(paymentDTO.value());
         payment.setDate(paymentDTO.date());
@@ -93,7 +91,7 @@ public class PaymentService {
     }
 
     public void deletePayment(UUID id) {
-        var payment = repository.findById(id).orElseThrow(() -> new PaymentNotFoundException("Payment with id " + id + " was not found"));
+        var payment = repository.findById(id).orElseThrow();
         repository.deleteById(payment.getId());
     }
 
@@ -121,7 +119,7 @@ public class PaymentService {
         payment.setDate(paymentDTO.date());
         payment.setType(paymentDTO.type());
 
-        var user = userRepository.findById(paymentDTO.userId()).orElseThrow(() -> new UserNotFoundException("User with id " + paymentDTO.userId() + " was not found"));
+        var user = userRepository.findById(paymentDTO.userId()).orElseThrow();
         payment.setUser(user);
 
         return payment;

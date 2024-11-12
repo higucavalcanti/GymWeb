@@ -19,8 +19,8 @@ public class EmailNotificationService implements PaymentObserver {
 
     private void sendEmailNotification(Payment payment) {
         var email = payment.getUser().getEmail();
-        var subject = "GymWeb Payment Confirmed";
-        var body = "Hello " + payment.getUser().getUsername() + ",\n\nYour payment of " + payment.getValue() + " has been successfully confirmed.";
+        var subject = "Pagamento GymWeb Confirmado";
+        var body = "Olá " + payment.getUser().getUsername() + ",\n\nSeu pagamento de " + payment.getValue() + " foi confirmado com sucesso.";
 
         System.out.println("Sending email to " + email);
         System.out.println(subject + "\n" + body);

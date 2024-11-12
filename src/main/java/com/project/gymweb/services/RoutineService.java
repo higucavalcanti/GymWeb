@@ -2,12 +2,25 @@ package com.project.gymweb.services;
 
 import com.project.gymweb.dto.create.RoutineDTO;
 import com.project.gymweb.dto.view.RoutineRO;
+import com.project.gymweb.entities.Exercise;
 import com.project.gymweb.entities.Routine;
+import com.project.gymweb.repositories.ExerciseRepository;
 import com.project.gymweb.repositories.RoutineRepository;
 import com.project.gymweb.repositories.UserRepository;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,11 +28,13 @@ import java.util.UUID;
 public class RoutineService {
     private final RoutineRepository repository;
     private final UserRepository userRepository;
+    private final ExerciseRepository exerciseRepository;
 
     @Autowired
-    public RoutineService(RoutineRepository repository, UserRepository userRepository) {
+    public RoutineService(RoutineRepository repository, UserRepository userRepository, ExerciseRepository exerciseRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.exerciseRepository = exerciseRepository;
     }
 
     public List<RoutineRO> findAll() {
@@ -27,7 +42,8 @@ public class RoutineService {
     }
 
     public List<RoutineRO> findAllByUserId(UUID userId) {
-        return repository.findAllByUserId(userId).stream().map(this::entityToRO).toList();
+        var user = userRepository.findById(userId).orElseThrow();
+        return repository.findAllByUserId(user.getId()).stream().map(this::entityToRO).toList();
     }
 
     public List<RoutineRO> findAllByUserUsername(String username) {
@@ -39,7 +55,6 @@ public class RoutineService {
         var user = userRepository.findByEmail(email).orElseThrow();
         return repository.findAllByUserId(user.getId()).stream().map(this::entityToRO).toList();
     }
-
 
     public RoutineRO getRoutine(UUID routineId) {
         var routine = repository.findById(routineId).orElseThrow();
@@ -65,11 +80,13 @@ public class RoutineService {
     }
 
     public void deleteRoutine(UUID id) {
-        repository.deleteById(id);
+        var routine = repository.findById(id).orElseThrow();
+        repository.deleteById(routine.getId());
     }
 
     private Routine dtoToEntity(RoutineDTO routineDTO) {
         Routine routine = new Routine();
+
         routine.setId(UUID.randomUUID());
         routine.setName(routineDTO.name());
 
@@ -83,4 +100,51 @@ public class RoutineService {
     private RoutineRO entityToRO(Routine routine) {
         return new RoutineRO(routine.getId(), routine.getName(), routine.getUser().getId());
     }
+
+    public ResponseEntity<InputStreamResource> exportRoutineToPDF(UUID routineId) throws IOException {
+        Routine routine = repository.findById(routineId).orElseThrow();
+        List<Exercise> exercises = exerciseRepository.findAllByRoutineId(routineId);
+    
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+    
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+                contentStream.beginText();
+                contentStream.setLeading(20f);
+                contentStream.newLineAtOffset(50, 750);
+                contentStream.showText("Routine Plan: " + routine.getName());
+                contentStream.newLine();
+                contentStream.showText("User: " + routine.getUser().getUsername());
+                contentStream.newLine();
+                contentStream.endText();
+    
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(50, 700);
+                for (Exercise exercise : exercises) {
+                    contentStream.showText("Exercise: " + exercise.getName());
+                    contentStream.newLine();
+                    contentStream.showText("Sets: " + exercise.getSets() + " | Reps: " + exercise.getReps());
+                    contentStream.newLine();
+                }
+                contentStream.endText();
+            }
+    
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            document.save(outputStream);
+    
+            ByteArrayInputStream pdfInputStream = new ByteArrayInputStream(outputStream.toByteArray());
+    
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "inline; filename=routine_plan.pdf");
+    
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(pdfInputStream));
+        }
+    }
+    
 }

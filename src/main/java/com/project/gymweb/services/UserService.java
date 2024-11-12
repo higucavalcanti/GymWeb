@@ -6,7 +6,6 @@ import com.project.gymweb.entities.User;
 import com.project.gymweb.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +15,11 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository repository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    UserService(UserRepository repository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    UserService(UserRepository repository, UserRepository userRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserRO> findAll() {
@@ -53,7 +50,7 @@ public class UserService {
 
     public UserRO createUser(UserRegisterDTO userRegisterDTO) {
         var user = dtoToEntity(userRegisterDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword((user.getPassword()));
         var savedUser = repository.save(user);
         return entityToRO(savedUser);
     }
@@ -62,7 +59,7 @@ public class UserService {
         var user = userRepository.findById(id).orElseThrow();
 
         user.setUsername(userRegisterDTO.username());
-        user.setPassword(passwordEncoder.encode(userRegisterDTO.password()));
+        user.setPassword((userRegisterDTO.password()));
         user.setEmail(userRegisterDTO.email());
 
         var savedUser = repository.save(user);
