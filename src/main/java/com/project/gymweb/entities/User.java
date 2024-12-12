@@ -26,6 +26,11 @@ public class User implements UserDetails {
     @Column
     private String role = "USER";
 
+    public class Roles {
+        public static final String USER = "USER";
+        public static final String ADMIN = "ADMIN";
+    }
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();
@@ -59,5 +64,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getRoles() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRoles'");
     }
 }

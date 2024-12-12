@@ -2,11 +2,11 @@ package com.project.gymweb.controllers;
 
 import com.project.gymweb.dto.create.ExerciseDTO;
 import com.project.gymweb.dto.view.ExerciseRO;
-import com.project.gymweb.entities.Exercise;
 import com.project.gymweb.services.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,16 +54,18 @@ public class ExerciseController {
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ExerciseRO> createExercise(@RequestBody ExerciseDTO exerciseDTO) {
         var exercise = exerciseService.createExercise(exerciseDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(exercise);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateExercise(@PathVariable UUID id, @RequestBody ExerciseDTO exerciseDTO) {
         try {
-            ExerciseRO updatedExercise = exerciseService.updateExercise(id, exerciseDTO);
-            return ResponseEntity.status(HttpStatus.OK).body("Exercise updated successfully.");
+            var exercise = exerciseService.updateExercise(id, exerciseDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(exercise);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("Exercise with ID: " + id + " not found.");
@@ -71,6 +73,7 @@ public class ExerciseController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteExercise(@PathVariable UUID id) {
         try {
             exerciseService.deleteExercise(id);

@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: roboto, sans-serif;
+}
+
+:root {
+  --purple-900: #2c2245; /* Roxo escuro suavizado */
+  --purple-700: #4a3871; /* Roxo médio equilibrado */
+  --purple-500: #6d51a4; /* Roxo vibrante mais suave */
+  --purple-300: #a890d8; /* Roxo claro para detalhes */
+  --purple-100: #f2ebfa; /* Lilás muito claro para fundos */
+  --gray-100: #f9f9f9; /* Neutro claro para complementar */
+}

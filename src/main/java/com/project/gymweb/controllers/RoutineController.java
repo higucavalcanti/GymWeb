@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -54,23 +55,27 @@ public class RoutineController {
     }
 
     @GetMapping("/{routineId}/export/pdf")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InputStreamResource> exportRoutineToPDF(@PathVariable UUID routineId) throws IOException {
         return routineService.exportRoutineToPDF(routineId);
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoutineRO> addRoutine(@RequestBody RoutineDTO routineDTO) {
         var routine = routineService.createRoutine(routineDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(routine);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoutineRO> updateRoutine(@PathVariable UUID id, @RequestBody RoutineDTO routineDTO) {
         var routine = routineService.updateRoutine(id, routineDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(routine);
     }
 
     @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteRoutine(@PathVariable UUID id) {
         routineService.deleteRoutine(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
